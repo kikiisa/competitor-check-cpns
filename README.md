@@ -1,6 +1,6 @@
 # CPNS Competitor Checker
 
-Aplikasi ini digunakan untuk mengetahui jurusan pesaing CPNS 2024. Aplikasi ini menggunakan puppeteer untuk melakukan scraping data dari website resmi pendaftaran CPNS 2024 dan menyimpannya dalam bentuk JSON.
+Aplikasi ini digunakan untuk mengetahui jurusan pesaing CPNS 2024. Aplikasi ini menggunakan puppeteer untuk melakukan scraping data dari PDDIKTI .
 
 Aplikasi ini dapat membantu calon pelamar untuk mengetahui jurusan pesaing CPNS 2024 dengan lebih mudah dan cepat. Dengan demikian, pelamar dapat mempersiapkan diri dengan lebih baik untuk menghadapi seleksi CPNS 2024.
 
