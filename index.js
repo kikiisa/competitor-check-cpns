@@ -15,8 +15,6 @@ const readExcel = (filePath) => {
     return data[0];
 }
 
-
-
 const jsonData = JSON.parse(fs.readFileSync("./data/data.json", "utf-8"));
 
 const DumyData = [
