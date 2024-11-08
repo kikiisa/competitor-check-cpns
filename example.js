@@ -5,7 +5,9 @@ const baseURL = "https://pddikti.kemdikbud.go.id/search/mahasiswa/Mohamad%20Rizk
 
 const main = async () => {
     const browser = await puppeter.launch({
-        headless:false
+        headless:false,
+        // args: ['--no-startup-window']
+
     });
     const page = await browser.newPage();
     await page.goto(baseURL,{
