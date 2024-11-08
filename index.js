@@ -2,7 +2,13 @@ import puppeter from "puppeteer";
 import * as fs from "fs";
 import readline from "readline";
 import xlsx from "xlsx";
-import { log } from "console";
+const major = [
+    "SISTEM INFORMASI",
+    "TEKNOLOGI INFORMASI",
+    "TEKNIK INFORMATIKA",
+    "TEKNIK KOMPUTER",
+    "PENDIDIKAN TEKNOLOGI INFORMASI"
+]
 
 const readExcel = (filePath) => {
     const file = xlsx.readFile(filePath);
@@ -12,11 +18,13 @@ const readExcel = (filePath) => {
         const temp = xlsx.utils.sheet_to_json(file.Sheets[file.SheetNames[i]])
         data.push(temp)
     }
+    // console.log(data);
+    
     return data[0];
 }
 
-const jsonData = JSON.parse(fs.readFileSync("./data/data.json", "utf-8"));
-// const jsonData = JSON.parse(fs.readFileSync("./data/data.json", "utf-8"));
+
+
 
 const DumyData = [
     "Mohamad Rizky Isa",
@@ -30,7 +38,7 @@ const rl = readline.createInterface({
 });
 
 
-const checkData = async (params) => {
+const checkData = async (params,lokasi) => {
     let baseURL = `https://pddikti.kemdikbud.go.id/search/mahasiswa/${params}`;
     const browser = await puppeter.launch({
         headless: false,
@@ -47,9 +55,12 @@ const checkData = async (params) => {
     // ambil text
     const text = await page.evaluate(tableElement => tableElement.textContent, tableElement);
     // output
-    const result = `Nama : ${params}\n Jurusan: ${text}`
     await browser.close();
-    return result
+    return {
+        nama:params,
+        jurusan:text,
+        lokasi:lokasi
+    }
 };
 
 const inputData = async () => {
@@ -64,17 +75,32 @@ const inputData = async () => {
 }
 
 const scannerWithOutputExcel = async () => {
-    for (let i = 0; i < DumyData.length; i++) {
+    const result = [];
+    const dataExcel = readExcel("./data/dataset.xlsx")
+    // console.log(dataExcel[1482]);
+    
+    for (let i = 80; i < 100; i++) {
         console.time('checkDataProcess');
         try {
-            const res = await checkData(DumyData[i]);
-            console.log(res);
+            const res = await checkData(dataExcel[i].Nama,dataExcel[i].Lokasi);
+            if (major.includes(res.jurusan.toUpperCase())) {
+                result.push(res);
+                console.log(` ${dataExcel[i].Nama} jurusan : ${res.jurusan} Titik Lokasi : ${dataExcel[i].Lokasi} `);
+            } else {
+                console.log(` ${dataExcel[i].Nama} tidak termasuk jurusan yang diinginkan.`);
+            }
         } catch (err) {
             console.log(err);
         }
         console.timeEnd('checkDataProcess');
-    }
+    } 
+    const ws = xlsx.utils.json_to_sheet(result);
+    const wb = xlsx.utils.book_new();
+    xlsx.utils.book_append_sheet(wb, ws, 'Sheet1');
+    xlsx.writeFile(wb, 'hasil.xlsx');
 }
 
-scannerWithOutputExcel();
+
+inputData()
+// scannerWithOutputExcel();
 
