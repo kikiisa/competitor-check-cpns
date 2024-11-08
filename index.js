@@ -10,12 +10,13 @@ const readExcel = (filePath) => {
     const sheets = file.SheetNames
     for (let i = 0; i < sheets.length; i++) {
         const temp = xlsx.utils.sheet_to_json(file.Sheets[file.SheetNames[i]])
-        data.push(temp) 
+        data.push(temp)
     }
     return data[0];
 }
 
 const jsonData = JSON.parse(fs.readFileSync("./data/data.json", "utf-8"));
+// const jsonData = JSON.parse(fs.readFileSync("./data/data.json", "utf-8"));
 
 const DumyData = [
     "Mohamad Rizky Isa",
@@ -34,7 +35,7 @@ const checkData = async (params) => {
     const browser = await puppeter.launch({
         headless: false,
         // args: ['--no-startup-window']
-        
+
     });
     const page = await browser.newPage();
     await page.goto(baseURL, {
@@ -57,24 +58,22 @@ const inputData = async () => {
     console.log("------------------------------------------------")
     while (true) {
         let greetUser = `${await new Promise(resolve => rl.question('Masukkan nama Anda: ', resolve))}`;
-         console.log(await checkData(greetUser));
+        console.log(await checkData(greetUser));
     }
     rl.close();
 }
 
 const scannerWithOutputExcel = async () => {
-    const data = readExcel("./data/dataset.xlsx");
-    DumyData.map(async(item) => {
+    for (let i = 0; i < DumyData.length; i++) {
         console.time('checkDataProcess');
         try {
-            const res = await checkData(item);
+            const res = await checkData(DumyData[i]);
             console.log(res);
         } catch (err) {
             console.log(err);
         }
         console.timeEnd('checkDataProcess');
-    })
-    
+    }
 }
 
 scannerWithOutputExcel();
