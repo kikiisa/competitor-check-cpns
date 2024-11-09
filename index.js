@@ -2,14 +2,11 @@ import puppeter from "puppeteer";
 import * as fs from "fs";
 import readline from "readline";
 import xlsx from "xlsx";
-const major = [
-    "SISTEM INFORMASI",
-    "TEKNOLOGI INFORMASI",
-    "TEKNIK INFORMATIKA",
-    "TEKNIK KOMPUTER",
-    "PENDIDIKAN TEKNOLOGI INFORMASI"
-]
+import Table from "cli-table";
 
+const table = new Table({
+    head: ['No', 'Nama', 'Lokasi', 'Jurusan']
+});
 const readExcel = (filePath) => {
     const file = xlsx.readFile(filePath);
     let data = []
@@ -18,25 +15,13 @@ const readExcel = (filePath) => {
         const temp = xlsx.utils.sheet_to_json(file.Sheets[file.SheetNames[i]])
         data.push(temp)
     }
-    // console.log(data);
-    
     return data[0];
 }
-
-
-
-
-const DumyData = [
-    "Mohamad Rizky Isa",
-    "Sofyan Isa",
-    "Kasmawaty Wartabone"
-]
-
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
 });
-
+const dataExcel = readExcel("./data/dataset.xlsx")
 
 const checkData = async (params,lokasi) => {
     let baseURL = `https://pddikti.kemdikbud.go.id/search/mahasiswa/${params}`;
@@ -62,45 +47,61 @@ const checkData = async (params,lokasi) => {
         lokasi:lokasi
     }
 };
-
 const inputData = async () => {
-    console.log("*** Selamat Datang di CPNS Competitor Checker V.1.1  ***");
-    console.log("*** DI KEMBANGKAN OLEH : MOHAMAD RIZKY ISA ***");
-    console.log("------------------------------------------------")
-    while (true) {
-        let greetUser = `${await new Promise(resolve => rl.question('Masukkan nama Anda: ', resolve))}`;
-        console.log(await checkData(greetUser));
-    }
+    let greetUser = `${await new Promise(resolve => rl.question('Masukkan nama Anda: ', resolve))}`;
+    const response = await checkData(greetUser)
+    table.push([1,response.nama,"null",response.jurusan]);
+    console.log(table.toString());  
     rl.close();
 }
-
-const scannerWithOutputExcel = async () => {
+const scannerWithInput = async () => {
     const result = [];
-    const dataExcel = readExcel("./data/dataset.xlsx")
-    // console.log(dataExcel[1482]);
     
-    for (let i = 80; i < 100; i++) {
-        console.time('checkDataProcess');
-        try {
-            const res = await checkData(dataExcel[i].Nama,dataExcel[i].Lokasi);
-            if (major.includes(res.jurusan.toUpperCase())) {
-                result.push(res);
-                console.log(` ${dataExcel[i].Nama} jurusan : ${res.jurusan} Titik Lokasi : ${dataExcel[i].Lokasi} `);
-            } else {
-                console.log(` ${dataExcel[i].Nama} tidak termasuk jurusan yang diinginkan.`);
-            }
-        } catch (err) {
-            console.log(err);
+    console.log(`Jumlah data : ${dataExcel.length}`);
+    let step1 = `${await new Promise(resolve => rl.question('Masukkan jumlah data 1 : ', resolve))}`;
+    let step2 = `${await new Promise(resolve => rl.question('Masukkan jumlah data 2 : ', resolve))}`; 
+    if(step2 - step1 > 100){
+        console.log("Jumlah data tidak boleh lebih dari 100");
+    }else{
+        if(result.length == 0){
+            console.log("Data tidak ditemukan Silahkan Upload File Excel, Atau Memasukkan Data Manual Pada Menu 1");
         }
+        console.time('checkDataProcess');
+        for (let i = Number(step1); i < Number(step2); i++) {
+            try {
+                const res = await checkData(dataExcel[i].Nama,dataExcel[i].Lokasi);
+                table.push([i+1,res.nama,res.lokasi,res.jurusan]);
+                // console.log(` ${dataExcel[i].Nama} jurusan : ${res.jurusan} Titik Lokasi : ${dataExcel[i].Lokasi} `);
+            } catch (err) {
+                console.log(err);
+            }
+        } 
+        console.log(table.toString());
         console.timeEnd('checkDataProcess');
-    } 
-    const ws = xlsx.utils.json_to_sheet(result);
-    const wb = xlsx.utils.book_new();
-    xlsx.utils.book_append_sheet(wb, ws, 'Sheet1');
-    xlsx.writeFile(wb, 'hasil.xlsx');
+    }
 }
-
-
-inputData()
 // scannerWithOutputExcel();
-
+const main = async () => {
+    console.log('=======================================');
+    console.log('Selamat Datang Di Check Jurusan V.1.1');
+    console.log('=======================================');
+    console.log('Pilih Menu');
+    console.log('1. Scanner dengan inputan manual');
+    console.log('2. Scanner dengan inputan automatis');
+    console.log('=======================================');
+    const answer2 = await new Promise(resolve => rl.question('Input : ', resolve));
+    
+    switch (answer2) {
+        case '1':
+            inputData();
+            main();
+            break;
+        case '2':
+            scannerWithInput();
+            main()
+            break;
+        default:
+            break;
+    }
+}
+main();
